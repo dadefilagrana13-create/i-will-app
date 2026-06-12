@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I Will — Anti-Procrastination</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>body{font-family:'Inter',sans-serif;}</style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <div class="text-center mb-10">
+    <h1 class="text-4xl font-black mb-2">I Will. 🔥</h1>
+    <p class="text-gray-400">Make a commitment. Put money on it. Get it done.</p>
+  </div>
+
+  <!-- ACTIVE CONTRACTS -->
+  <div id="contracts-section" class="mb-8">
+    <h2 class="font-bold text-lg mb-4">Active Contracts</h2>
+    <div id="contracts-list" class="space-y-3"></div>
+  </div>
+
+  <!-- NEW CONTRACT -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+    <h2 class="font-bold text-lg mb-4">➕ New Contract</h2>
+    <div class="space-y-4">
+      <div>
+        <label class="text-sm text-gray-400 block mb-1">I will...</label>
+        <input id="goal" type="text" placeholder="e.g. Finish the pitch deck" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Deadline</label>
+          <input id="deadline" type="datetime-local" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
+        </div>
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Penalty (€)</label>
+          <input id="penalty" type="number" placeholder="10" min="1" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-gray-400 block mb-1">Verification method</label>
+        <select id="verify-method" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500">
+          <option>Screenshot proof</option>
+          <option>Human verifier</option>
+          <option>AI verification</option>
+          <option>Honor system</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm text-gray-400 block mb-1">Why does this matter to you?</label>
+        <textarea id="motivation" rows="2" placeholder="Your motivation..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 resize-none"></textarea>
+      </div>
+      <button onclick="createContract()" class="w-full bg-orange-500 hover:bg-orange-600 py-3 rounded-xl font-bold text-lg transition-colors">🤝 Commit Now</button>
+    </div>
+  </div>
+
+  <!-- AI ACCOUNTABILITY -->
+  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mt-6">
+    <h2 class="font-bold text-lg mb-4">🤖 AI Accountability Coach</h2>
+    <textarea id="ai-input" rows="3" placeholder="Tell me what you're struggling with or what you achieved today..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-orange-500"></textarea>
+    <button onclick="getAICoach()" class="mt-3 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-medium">Get Coaching 💬</button>
+    <div id="ai-coach-response" class="mt-4 hidden bg-gray-800 rounded-xl p-4 text-sm text-gray-200"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://nmulrsbqdeqokvrybapn.supabase.co';
+const SUPABASE_KEY='%%SUPABASE_ANON_KEY%%';
+const GROQ_KEY='%%GROQ_KEY%%';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+function timeLeft(deadline) {
+  const diff=new Date(deadline)-new Date();
+  if(diff<0)return'⚠️ EXPIRED';
+  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000);
+  if(h>24)return`${Math.floor(h/24)}d ${h%24}h left`;
+  return`${h}h ${m}m left`;
+}
+
+function statusBadge(s){
+  const map={active:'bg-orange-900 text-orange-300',completed:'bg-green-900 text-green-300',failed:'bg-red-900 text-red-300'};
+  return`<span class="px-2 py-1 rounded text-xs font-medium ${map[s]||'bg-gray-800 text-gray-400'}">${s}</span>`;
+}
+
+async function loadContracts(){
+  const{data}=await sb.from('iwill_contracts').select('*').order('created_at',{ascending:false});
+  const el=document.getElementById('contracts-list');
+  if(!data||!data.length){el.innerHTML='<p class="text-gray-500 text-sm text-center py-4">No contracts yet. Make your first commitment!</p>';return;}
+  el.innerHTML=data.map(c=>`
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+      <div class="flex justify-between items-start mb-2">
+        <p class="font-semibold">I will: ${c.goal}</p>
+        ${statusBadge(c.status)}
+      </div>
+      <div class="flex gap-4 text-sm text-gray-400 mb-3">
+        <span>💰 €${c.penalty} penalty</span>
+        <span>⏰ ${timeLeft(c.deadline)}</span>
+        <span>✅ ${c.verify_method}</span>
+      </div>
+      ${c.motivation?`<p class="text-xs text-gray-500 italic mb-3">"${c.motivation}"</p>`:''}
+      ${c.status==='active'?`<div class="flex gap-2"><button onclick="updateStatus('${c.id}','completed')" class="flex-1 bg-green-700 hover:bg-green-600 py-2 rounded-lg text-sm font-medium">✅ Mark Complete</button><button onclick="updateStatus('${c.id}','failed')" class="flex-1 bg-red-900 hover:bg-red-800 py-2 rounded-lg text-sm">❌ Failed</button></div>`:''}
+    </div>`).join('');
+}
+
+async function createContract(){
+  const goal=document.getElementById('goal').value;
+  const deadline=document.getElementById('deadline').value;
+  const penalty=document.getElementById('penalty').value;
+  if(!goal||!deadline||!penalty){alert('Fill all fields!');return;}
+  await sb.from('iwill_contracts').insert([{goal,deadline,penalty:parseFloat(penalty),verify_method:document.getElementById('verify-method').value,motivation:document.getElementById('motivation').value,status:'active'}]);
+  document.getElementById('goal').value='';
+  document.getElementById('deadline').value='';
+  document.getElementById('penalty').value='';
+  document.getElementById('motivation').value='';
+  loadContracts();
+}
+
+async function updateStatus(id,status){
+  await sb.from('iwill_contracts').update({status}).eq('id',id);
+  loadContracts();
+}
+
+async function getAICoach(){
+  const text=document.getElementById('ai-input').value;
+  const el=document.getElementById('ai-coach-response');
+  if(!text.trim())return;
+  el.classList.remove('hidden');
+  el.textContent='Thinking...';
+  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${GROQ_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:'You are a tough but caring accountability coach. Be direct, motivating, and concise. Max 3 sentences.'},{role:'user',content:text}],max_tokens:150})});
+  const data=await res.json();
+  el.textContent=data.choices[0].message.content;
+}
+
+loadContracts();
+</script>
+</body>
+</html>
