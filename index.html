@@ -1,140 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>I Will — Anti-Procrastination</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>body{font-family:'Inter',sans-serif;}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I Will — Commitment Contracts</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #0a0a0f; color: #e2e8f0; min-height: 100vh; }
+  .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+  .gradient-text { background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .btn-fire { background: linear-gradient(135deg, #f59e0b, #ef4444); border: none; padding: 12px 28px; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; transition: all 0.2s; }
+  .btn-fire:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(239,68,68,0.4); }
+  input, textarea, select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 16px; color: #e2e8f0; width: 100%; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: #f59e0b; }
+  .contract-card { border: 1px solid rgba(245,158,11,0.3); background: rgba(245,158,11,0.03); border-radius: 16px; padding: 20px; transition: all 0.3s; }
+  .contract-card:hover { border-color: rgba(245,158,11,0.6); transform: translateY(-2px); }
+  .progress-bar { height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #ef4444); border-radius: 4px; transition: width 0.5s; }
+  .penalty-badge { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 2px; }
+</style>
 </head>
-<script src="config.js"></script>
-<body class="bg-gray-950 text-white min-h-screen">
-<div class="max-w-2xl mx-auto px-4 py-10">
-  <div class="text-center mb-10">
-    <h1 class="text-4xl font-black mb-2">I Will. 🔥</h1>
-    <p class="text-gray-400">Make a commitment. Put money on it. Get it done.</p>
-  </div>
-
-  <!-- ACTIVE CONTRACTS -->
-  <div id="contracts-section" class="mb-8">
-    <h2 class="font-bold text-lg mb-4">Active Contracts</h2>
-    <div id="contracts-list" class="space-y-3"></div>
-  </div>
-
-  <!-- NEW CONTRACT -->
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-    <h2 class="font-bold text-lg mb-4">➕ New Contract</h2>
-    <div class="space-y-4">
-      <div>
-        <label class="text-sm text-gray-400 block mb-1">I will...</label>
-        <input id="goal" type="text" placeholder="e.g. Finish the pitch deck" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm text-gray-400 block mb-1">Deadline</label>
-          <input id="deadline" type="datetime-local" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
-        </div>
-        <div>
-          <label class="text-sm text-gray-400 block mb-1">Penalty (€)</label>
-          <input id="penalty" type="number" placeholder="10" min="1" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500" />
-        </div>
-      </div>
-      <div>
-        <label class="text-sm text-gray-400 block mb-1">Verification method</label>
-        <select id="verify-method" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500">
-          <option>Screenshot proof</option>
-          <option>Human verifier</option>
-          <option>AI verification</option>
-          <option>Honor system</option>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm text-gray-400 block mb-1">Why does this matter to you?</label>
-        <textarea id="motivation" rows="2" placeholder="Your motivation..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 resize-none"></textarea>
-      </div>
-      <button onclick="createContract()" class="w-full bg-orange-500 hover:bg-orange-600 py-3 rounded-xl font-bold text-lg transition-colors">🤝 Commit Now</button>
+<body>
+<div class="max-w-4xl mx-auto px-6 py-10">
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <div class="text-6xl mb-4">🔥</div>
+    <h1 class="text-5xl font-black gradient-text mb-3">I Will</h1>
+    <p class="text-slate-400 text-lg">Commitment contracts with real consequences. No excuses.</p>
+    <div class="flex justify-center gap-8 mt-6">
+      <div class="text-center"><div id="stat-active" class="text-3xl font-black text-amber-400">0</div><div class="text-xs text-slate-500">Active</div></div>
+      <div class="text-center"><div id="stat-done" class="text-3xl font-black text-green-400">0</div><div class="text-xs text-slate-500">Completed</div></div>
+      <div class="text-center"><div id="stat-penalty" class="text-3xl font-black text-red-400">€0</div><div class="text-xs text-slate-500">At Stake</div></div>
     </div>
   </div>
 
-  <!-- AI ACCOUNTABILITY -->
-  <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 mt-6">
-    <h2 class="font-bold text-lg mb-4">🤖 AI Accountability Coach</h2>
-    <textarea id="ai-input" rows="3" placeholder="Tell me what you're struggling with or what you achieved today..." class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-orange-500"></textarea>
-    <button onclick="getAICoach()" class="mt-3 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm font-medium">Get Coaching 💬</button>
-    <div id="ai-coach-response" class="mt-4 hidden bg-gray-800 rounded-xl p-4 text-sm text-gray-200"></div>
+  <!-- New Contract Button -->
+  <div class="flex justify-center mb-8">
+    <button onclick="toggleForm()" class="btn-fire text-lg px-8 py-4">
+      <i class="fas fa-fire mr-2"></i>Make a Commitment
+    </button>
   </div>
+
+  <!-- Contract Form -->
+  <div id="contract-form" class="glass rounded-2xl p-8 mb-10 hidden">
+    <h2 class="text-xl font-bold mb-6">📝 New Commitment Contract</h2>
+    <div class="grid grid-cols-2 gap-5">
+      <div class="col-span-2">
+        <label class="text-xs text-slate-400 mb-2 block font-medium">I WILL... (your commitment) *</label>
+        <input id="f-goal" placeholder="e.g. Study 2 hours every day for 30 days" class="text-lg">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 mb-2 block font-medium">Deadline *</label>
+        <input id="f-deadline" type="datetime-local">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 mb-2 block font-medium">Penalty if I fail (€)</label>
+        <input id="f-penalty" type="number" placeholder="10" min="0">
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 mb-2 block font-medium">Verification Method</label>
+        <select id="f-verify">
+          <option>Self-report (honor)</option>
+          <option>Photo proof</option>
+          <option>Friend witness</option>
+          <option>AI verification</option>
+          <option>App data tracking</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 mb-2 block font-medium">Why does this matter to you?</label>
+        <input id="f-motivation" placeholder="Your deep reason...">
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="saveContract()" class="btn-fire"><i class="fas fa-signature mr-2"></i>Sign Contract</button>
+      <button onclick="toggleForm()" class="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Contracts List -->
+  <div id="contracts-list" class="space-y-4"></div>
 </div>
 
+<div id="toast" class="fixed bottom-6 right-6 px-6 py-3 rounded-xl font-semibold hidden z-50 text-white"></div>
+
 <script>
-const SUPABASE_URL='https://nmulrsbqdeqokvrybapn.supabase.co';
-const SUPABASE_KEY=window.APP_CONFIG?.SUPABASE_KEY||'';
-const GROQ_KEY=window.APP_CONFIG?.GROQ_KEY||'';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const SUPABASE_URL = 'https://nmulrsbqdeqokvrybapn.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tdWxyc2JxZGVxb2t2cnliYXBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyODY0NDcsImV4cCI6MjA5NDg2MjQ0N30.iGN_OGVkw0j3VCEi9qUroMbpT37P3UPRUf1cYyqFBys'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.className = `fixed bottom-6 right-6 px-6 py-3 rounded-xl font-semibold z-50 text-white ${type==='error'?'bg-red-600':'bg-amber-500'}`
+  setTimeout(() => t.className += ' hidden', 3000)
+}
+
+function toggleForm() { document.getElementById('contract-form').classList.toggle('hidden') }
 
 function timeLeft(deadline) {
-  const diff=new Date(deadline)-new Date();
-  if(diff<0)return'⚠️ EXPIRED';
-  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000);
-  if(h>24)return`${Math.floor(h/24)}d ${h%24}h left`;
-  return`${h}h ${m}m left`;
+  const now = new Date(), end = new Date(deadline)
+  const diff = end - now
+  if(diff < 0) return '<span class="text-red-400">EXPIRED</span>'
+  const d = Math.floor(diff/86400000), h = Math.floor((diff%86400000)/3600000)
+  if(d > 0) return `<span class="text-amber-300">${d}d ${h}h left</span>`
+  return `<span class="text-red-300">${h}h left</span>`
 }
 
-function statusBadge(s){
-  const map={active:'bg-orange-900 text-orange-300',completed:'bg-green-900 text-green-300',failed:'bg-red-900 text-red-300'};
-  return`<span class="px-2 py-1 rounded text-xs font-medium ${map[s]||'bg-gray-800 text-gray-400'}">${s}</span>`;
+function statusColor(s) {
+  return {active:'bg-amber-500',completed:'bg-green-500',failed:'bg-red-500',paused:'bg-slate-500'}[s]||'bg-slate-500'
 }
 
-async function loadContracts(){
-  const{data}=await sb.from('iwill_contracts').select('*').order('created_at',{ascending:false});
-  const el=document.getElementById('contracts-list');
-  if(!data||!data.length){el.innerHTML='<p class="text-gray-500 text-sm text-center py-4">No contracts yet. Make your first commitment!</p>';return;}
-  el.innerHTML=data.map(c=>`
-    <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
-      <div class="flex justify-between items-start mb-2">
-        <p class="font-semibold">I will: ${c.goal}</p>
-        ${statusBadge(c.status)}
+async function saveContract() {
+  const d = {
+    goal: document.getElementById('f-goal').value,
+    deadline: document.getElementById('f-deadline').value,
+    penalty: parseFloat(document.getElementById('f-penalty').value)||0,
+    verify_method: document.getElementById('f-verify').value,
+    motivation: document.getElementById('f-motivation').value,
+    status: 'active', progress: 0
+  }
+  if(!d.goal || !d.deadline) { showToast('Fill required fields','error'); return }
+  const {error} = await sb.from('iwill_contracts').insert(d)
+  if(error) { showToast('Error: '+error.message,'error'); return }
+  showToast('🔥 Contract signed! No turning back.')
+  toggleForm()
+  loadContracts()
+}
+
+async function updateProgress(id, val) {
+  const progress = Math.max(0, Math.min(100, parseInt(val)))
+  const status = progress >= 100 ? 'completed' : 'active'
+  await sb.from('iwill_contracts').update({progress, status}).eq('id', id)
+  loadContracts()
+}
+
+async function markFailed(id) {
+  if(!confirm('Mark as failed? This is permanent.')) return
+  await sb.from('iwill_contracts').update({status:'failed'}).eq('id', id)
+  loadContracts()
+}
+
+async function loadContracts() {
+  const {data} = await sb.from('iwill_contracts').select('*').order('created_at',{ascending:false})
+  const list = document.getElementById('contracts-list')
+  if(!data?.length) {
+    list.innerHTML = '<div class="glass rounded-2xl p-12 text-center text-slate-500"><div class="text-5xl mb-4">😴</div><p class="text-lg">No commitments yet. What are you waiting for?</p></div>'
+    return
+  }
+
+  const active = data.filter(c => c.status==='active').length
+  const done = data.filter(c => c.status==='completed').length
+  const stake = data.filter(c => c.status==='active').reduce((s,c) => s+(c.penalty||0), 0)
+  document.getElementById('stat-active').textContent = active
+  document.getElementById('stat-done').textContent = done
+  document.getElementById('stat-penalty').textContent = '€'+stake
+
+  list.innerHTML = data.map(c => `
+    <div class="contract-card ${c.status==='completed'?'border-green-500/30':c.status==='failed'?'border-red-500/30':''}">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-1">
+            <span class="text-sm font-bold uppercase ${statusColor(c.status)} text-white px-2 py-0.5 rounded-full">${c.status}</span>
+            ${c.penalty>0?`<span class="penalty-badge">€${c.penalty} at stake</span>`:''}
+          </div>
+          <h3 class="text-lg font-bold mt-2">"I will ${c.goal}"</h3>
+          ${c.motivation?`<p class="text-sm text-slate-400 mt-1 italic">"${c.motivation}"</p>`:''}
+        </div>
+        <button onclick="deleteContract('${c.id}')" class="text-slate-600 hover:text-red-400 transition-colors ml-4"><i class="fas fa-trash text-sm"></i></button>
       </div>
-      <div class="flex gap-4 text-sm text-gray-400 mb-3">
-        <span>💰 €${c.penalty} penalty</span>
-        <span>⏰ ${timeLeft(c.deadline)}</span>
-        <span>✅ ${c.verify_method}</span>
+      <div class="flex items-center gap-4 text-sm text-slate-400 mb-4">
+        ${c.deadline?`<span><i class="fas fa-calendar mr-1"></i>${timeLeft(c.deadline)}</span>`:''}
+        <span><i class="fas fa-check-circle mr-1"></i>${c.verify_method}</span>
       </div>
-      ${c.motivation?`<p class="text-xs text-gray-500 italic mb-3">"${c.motivation}"</p>`:''}
-      ${c.status==='active'?`<div class="flex gap-2"><button onclick="updateStatus('${c.id}','completed')" class="flex-1 bg-green-700 hover:bg-green-600 py-2 rounded-lg text-sm font-medium">✅ Mark Complete</button><button onclick="updateStatus('${c.id}','failed')" class="flex-1 bg-red-900 hover:bg-red-800 py-2 rounded-lg text-sm">❌ Failed</button></div>`:''}
-    </div>`).join('');
+      <div class="mb-3">
+        <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">Progress</span><span class="font-bold ${c.progress>=100?'text-green-400':'text-amber-400'}">${c.progress||0}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${c.progress||0}%"></div></div>
+      </div>
+      ${c.status==='active'?`
+        <div class="flex gap-2 mt-3">
+          <input type="range" min="0" max="100" value="${c.progress||0}" 
+            onchange="updateProgress('${c.id}',this.value)"
+            class="flex-1 accent-amber-400" style="background:transparent;border:none;padding:4px 0">
+          <button onclick="markFailed('${c.id}')" class="px-3 py-1.5 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 transition-colors">
+            <i class="fas fa-times mr-1"></i>Failed
+          </button>
+        </div>
+      `:''}
+    </div>
+  `).join('')
 }
 
-async function createContract(){
-  const goal=document.getElementById('goal').value;
-  const deadline=document.getElementById('deadline').value;
-  const penalty=document.getElementById('penalty').value;
-  if(!goal||!deadline||!penalty){alert('Fill all fields!');return;}
-  await sb.from('iwill_contracts').insert([{goal,deadline,penalty:parseFloat(penalty),verify_method:document.getElementById('verify-method').value,motivation:document.getElementById('motivation').value,status:'active'}]);
-  document.getElementById('goal').value='';
-  document.getElementById('deadline').value='';
-  document.getElementById('penalty').value='';
-  document.getElementById('motivation').value='';
-  loadContracts();
+async function deleteContract(id) {
+  if(!confirm('Delete this contract?')) return
+  await sb.from('iwill_contracts').delete().eq('id', id)
+  loadContracts()
 }
 
-async function updateStatus(id,status){
-  await sb.from('iwill_contracts').update({status}).eq('id',id);
-  loadContracts();
-}
-
-async function getAICoach(){
-  const text=document.getElementById('ai-input').value;
-  const el=document.getElementById('ai-coach-response');
-  if(!text.trim())return;
-  el.classList.remove('hidden');
-  el.textContent='Thinking...';
-  const res=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${GROQ_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:'You are a tough but caring accountability coach. Be direct, motivating, and concise. Max 3 sentences.'},{role:'user',content:text}],max_tokens:150})});
-  const data=await res.json();
-  el.textContent=data.choices[0].message.content;
-}
-
-loadContracts();
+loadContracts()
 </script>
 </body>
 </html>
